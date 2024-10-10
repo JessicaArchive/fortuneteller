@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>사주 보기</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; margin: 0; padding: 20px; }
+        h1 { color: #333; }
+        #birthDate, #birthTime { padding: 5px; font-size: 16px; }
+        #sajuButton { padding: 5px 10px; font-size: 16px; cursor: pointer; }
+        #sajuResult { white-space: pre-wrap; }
+        #errorMessage { color: red; }
+    </style>
+</head>
+<body>
+    <h1>사주 보기</h1>
+    <label for="birthDate">생년월일을 입력하세요 (YYYYMMDD 형식):</label>
+    <input type="text" id="birthDate" placeholder="예: 19900101">
+    <label for="birthTime">태어난 시간을 입력하세요 (HH:MM 형식):</label>
+    <input type="text" id="birthTime" placeholder="예: 09:30">
+    <button id="sajuButton">사주 보기</button>
+    <pre id="sajuResult"></pre>
+    <p id="errorMessage"></p>
+
+    <script>
+        document.getElementById('sajuButton').addEventListener('click', async () => {
+            const birthDate = document.getElementById('birthDate').value;
+            const birthTime = document.getElementById('birthTime').value;
+            if (!birthDate || birthDate.length !== 8 || !birthTime) {
+                document.getElementById('errorMessage').textContent = '올바른 생년월일과 시간을 입력해주세요.';
+                return;
+            }
+
+            try {
+                const response = await fetch('/saju', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ birthDate, birthTime }),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                document.getElementById('sajuResult').textContent = JSON.stringify(data, null, 2);
+                document.getElementById('errorMessage').textContent = '';
+            } catch (error) {
+                console.error('사주를 가져오는 데 실패했습니다:', error);
+                document.getElementById('sajuResult').textContent = '';
+                document.getElementById('errorMessage').textContent = `사주를 가져오는 데 실패했습니다: ${error.message}`;
+            }
+        });
+    </script>
+</body>
+</html>
